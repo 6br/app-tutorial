@@ -19,9 +19,9 @@ class UserHooks {
        $content = "aaa"; //->getPath();
        $storage = $app->getContainer()->query('ServerContainer')->getRootFolder();
        $usermanager = $app->getContainer()->query('ServerContainer')->getUserManager();
-       //$user = $usermanager->get($node["run"]);
+       $user = $usermanager->get($node["run"]);
        //$homedir = $user->getHome();
-       $homedir = "/var/www/html/data/test/";
+       $homedir = "/var/www/html/data/test";
        /*
        /*
 
@@ -36,12 +36,13 @@ class UserHooks {
 					} catch(\OCP\Files\NotFoundException $e) {
 							throw new StorageException('File does not exist');
 					}*/
-	\OCP\Util::writeLog('ftpquota', 'get user home failed: '. print_r($node, true), \OCP\Util::ERROR);
-	\OCP\Util::writeLog('ftpquota', 'get user home failed: '.escapeshellarg($homedir.'/files').$node["path"], \OCP\Util::ERROR);
-	exec("/usr/bin/cat ".escapeshellarg($homedir.'/files').$node["path"], $output, $return_value);
+	\OCP\Util::writeLog('ftpquota', 'get user home failed: '.$user, \OCP\Util::ERROR);
+	\OCP\Util::writeLog('ftpquota', 'get user home failed: '.escapeshellarg($homedir.'/files'.$node["path"]), \OCP\Util::ERROR);
+	exec("/bin/cat ".escapeshellarg($homedir.'/files'.$node["path"]), $output, $return_value);
 	//if ( $return_value !== 0 ) {
 	\OCP\Util::writeLog('ftpquota', 'pure-quotacheck returned '.$return_value.' '.implode("\n", $output), \OCP\Util::ERROR);
 	//}
+	/*
         try {
             try {
                 $file = $storage->get('/myfile.txt');
@@ -57,7 +58,7 @@ class UserHooks {
         } catch(\OCP\Files\NotPermittedException $e) {
             // you have to create this exception by yourself ;)
             throw new StorageException('Cant write to file');
-        }
+        }*/
     }
 
     public function register() {
