@@ -29,3 +29,5 @@ $container->query('OCP\INavigationManager')->add(function () use ($container) {
 		'name' => $l10n->t('Own Notes'),
 	];
 });
+
+\OCP\Util::connectHook('OC_Filesystem', 'post_write', 'OCA\OwnNotes\Service\UserHooks', 'writePost');
