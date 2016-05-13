@@ -2,9 +2,18 @@
 namespace OCA\OwnNotes\AppInfo;
 
 use OCP\AppFramework\App;
+use \OCA\OwnNotes\Service\UserHooks;
 
 $app = new App('ownnotes');
 $container = $app->getContainer();
+
+        $container->registerService('UserHooks', function($c) {
+            return new UserHooks(
+                $c->query('ServerContainer')->getRootFolder()
+            );
+        });
+
+$container->query('UserHooks')->register();
 
 $container->query('OCP\INavigationManager')->add(function () use ($container) {
 	$urlGenerator = $container->query('OCP\IURLGenerator');
@@ -30,4 +39,4 @@ $container->query('OCP\INavigationManager')->add(function () use ($container) {
 	];
 });
 
-\OCP\Util::connectHook('OC_Filesystem', 'post_write', 'OCA\OwnNotes\Service\UserHooks', 'writePost');
+//\OCP\Util::connectHook('OC_Filesystem', 'post_write', 'OCA\OwnNotes\Service\UserHooks', 'writePost');
