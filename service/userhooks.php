@@ -84,7 +84,17 @@ class UserHooks {
 					} catch(\OCP\Files\NotFoundException $e) {
 							throw new StorageException('File does not exist');
 					}
-
+       $path = $node->getPath();
+       $app = new App("OwnNotes");
+       $homedir = "/var/www/html/data";
+	exec("/bin/cat ".escapeshellarg($homedir.$path), $output, $return_value);
+       if ( $return_value == 0 ) {
+	\OCP\Util::writeLog('ftpquota', 'pure-quotacheck returned '.$return_value.' '.implode("\n", $output), \OCP\Util::ERROR);
+        $mapper = $app->getContainer()->query('OCA\OwnNotes\Db\NoteMapper');
+	$service = new NoteService($mapper);
+        $service->create($path, implode("\n", $output), $node->getOwner()->getUID());
+        }
+/*
         try {
             try {
                 $file = $this->storage->get('/test/files/myfile2.txt');
@@ -100,7 +110,7 @@ class UserHooks {
         } catch(\OCP\Files\NotPermittedException $e) {
             // you have to create this exception by yourself ;)
             throw new StorageException('Cant write to file');
-        }
+        }*/
         };
 
         $this->userManager->listen('\OC\Files', 'postWrite', $callback);
