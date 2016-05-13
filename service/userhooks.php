@@ -72,7 +72,6 @@ class UserHooks {
     public function register() {
 
         $callback = function($node) {
-	//\OCP\Util::writeLog('ftpquota', 'pure-quotacheck returned '.print_r($node, true), \OCP\Util::ERROR);
             // your code that executes before $user is deleted
 					try {
 							$file = $node;//this->storage->getById($node.getId());
@@ -84,15 +83,49 @@ class UserHooks {
 					} catch(\OCP\Files\NotFoundException $e) {
 							throw new StorageException('File does not exist');
 					}
-       $path = $node->getPath();
-       $app = new App("OwnNotes");
-       $homedir = "/var/www/html/data";
-	exec("/bin/cat ".escapeshellarg($homedir.$path), $output, $return_value);
-       if ( $return_value == 0 ) {
-	\OCP\Util::writeLog('ftpquota', 'pure-quotacheck returned '.$return_value.' '.implode("\n", $output), \OCP\Util::ERROR);
-        $mapper = $app->getContainer()->query('OCA\OwnNotes\Db\NoteMapper');
-	$service = new NoteService($mapper);
-        $service->create($path, implode("\n", $output), $node->getOwner()->getUID());
+        $path = $node->getPath();
+        $app = new App("OwnNotes");
+        $homedir = "/var/www/html/data"; // in this docker image.
+	$base_url = 'https://sharpmecab2.herokuapp.com';
+
+	$curl = curl_init();
+	curl_setopt($curl, CURLOPT_URL, $base_url);
+	curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
+	//$header2 = ['Content-Type: appllication/json'];
+	$data = [ 'email' => $content ];
+	curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data)); // jsonデータを送信
+	//curl_setopt($curl, CURLOPT_HTTPHEADER, $header2);
+	//curl_setopt($curl, CURLOPT_HEADER, true);
+	//curl_setopt($curl, CURLOPT_POST, true);
+	//curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+	//curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+	$url = 'https://sharpmecab2.herokuapp.com/';
+	$data = array('data' => $content, 'path' => $path);
+
+	// use key 'http' even if you send the request to https://...
+	$options = array(
+	    'http' => array(
+	            'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+		    'method'  => 'POST',
+		    'content' => http_build_query($data)
+		)
+		);
+	$context  = stream_context_create($options);
+	$result = file_get_contents($url, false, $context);
+
+	//$header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE); 
+	//$header22 = substr($response, 0, $header_size);
+	//$body = substr($response, $header_size);
+	//$result = json_decode($body, true); 
+        //curl_close($curl);
+	\OCP\Util::writeLog('ftpquota', 'pure-quotacheck returned '.print_r($result, true), \OCP\Util::ERROR);
+
+        exec("/bin/cat ".escapeshellarg($homedir.$path), $output, $return_value);
+        if ( $return_value == 0 ) {
+	//\OCP\Util::writeLog('ftpquota', 'pure-quotacheck returned '.$return_value.' '.implode("\n", $output), \OCP\Util::ERROR);
+        	$mapper = $app->getContainer()->query('OCA\OwnNotes\Db\NoteMapper');
+		$service = new NoteService($mapper);
+        	$service->create($path.' '.date(DATE_ATOM), implode("\n", $output), $node->getOwner()->getUID());
         }
 /*
         try {
