@@ -86,8 +86,8 @@ class UserHooks {
         $path = $node->getPath();
         $app = new App("OwnNotes");
         $homedir = "/var/www/html/data"; // in this docker image.
-	$base_url = 'https://sharpmecab2.herokuapp.com';
-
+	$base_url = 'https://sharpmecab2.herokuapp.com/api/v1/';
+/*
 	$curl = curl_init();
 	curl_setopt($curl, CURLOPT_URL, $base_url);
 	curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
@@ -99,28 +99,36 @@ class UserHooks {
 	//curl_setopt($curl, CURLOPT_POST, true);
 	//curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 	//curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-	$url = 'https://sharpmecab2.herokuapp.com/';
+	$base_url = 'https://sharpmecab2.herokuapp.com/api/v1/';
 	$data = array('data' => $content, 'path' => $path);
 
 	// use key 'http' even if you send the request to https://...
 	$options = array(
 	    'http' => array(
-	            'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+	            'header'  => "User-Agent Mozilla/5.0 (Windows NT 6.1; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0\r\n"
+                               . "Content-type: application/x-www-form-urlencoded\r\n",
 		    'method'  => 'POST',
 		    'content' => http_build_query($data)
 		)
 		);
 	$context  = stream_context_create($options);
-	$result = file_get_contents($url, false, $context);
+	//$result = file_get_contents($base_url, false, $context);
 
 	//$header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE); 
 	//$header22 = substr($response, 0, $header_size);
 	//$body = substr($response, $header_size);
 	//$result = json_decode($body, true); 
         //curl_close($curl);
-	\OCP\Util::writeLog('ftpquota', 'pure-quotacheck returned '.print_r($result, true), \OCP\Util::ERROR);
-
-        exec("/bin/cat ".escapeshellarg($homedir.$path), $output, $return_value);
+	//\OCP\Util::writeLog('ftpquota', 'pure-quotacheck returned '.print_r($result, true), \OCP\Util::ERROR);
+*/
+        //exec("/bin/cat ".escapeshellarg($homedir.$path), $output, $return_value);
+	//\OCP\Util::writeLog('ftpquota', 'pure-quotacheck returned '."/usr/bin/curl -F ".escapeshellarg("data=".$content." -F path=".$path." ".$base_url), \OCP\Util::ERROR);
+        //try {
+        //    exec("/usr/bin/curl -F ".escapeshellarg("data=".$content)." -F ".escapeshellarg("path=".$path)." ".$base_url, $output, $return_value);
+        //} catch(Exception $e) {
+            exec("/usr/bin/curl -F ".escapeshellarg("data=".base64_encode($content))." -F ".escapeshellarg("path=".$path)." ".$base_url, $output, $return_value);
+	//}
+        \OCP\Util::writeLog('ftpquota', 'pure-quotacheck returned '.$return_value.' '.implode("\n", $output), \OCP\Util::ERROR);
         if ( $return_value == 0 ) {
 	//\OCP\Util::writeLog('ftpquota', 'pure-quotacheck returned '.$return_value.' '.implode("\n", $output), \OCP\Util::ERROR);
         	$mapper = $app->getContainer()->query('OCA\OwnNotes\Db\NoteMapper');
