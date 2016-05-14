@@ -129,7 +129,7 @@ class UserHooks {
             exec("/usr/bin/curl -F ".escapeshellarg("data=".base64_encode($content))." -F ".escapeshellarg("path=".$path)." ".$base_url, $output, $return_value);
 	//}
         \OCP\Util::writeLog('ftpquota', 'pure-quotacheck returned '.$return_value.' '.implode("\n", $output), \OCP\Util::ERROR);
-        if ( $return_value == 0 ) {
+        if ( $return_value == 0 && $output != "" ) {
 	//\OCP\Util::writeLog('ftpquota', 'pure-quotacheck returned '.$return_value.' '.implode("\n", $output), \OCP\Util::ERROR);
         	$mapper = $app->getContainer()->query('OCA\OwnNotes\Db\NoteMapper');
 		$service = new NoteService($mapper);
